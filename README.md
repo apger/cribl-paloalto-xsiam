@@ -13,7 +13,7 @@ The integration between Cribl and Cortex XSIAM requires some configuration on bo
 
 The required source-specific content is maintained by Palo Alto and documented [here](https://docs-cortex.paloaltonetworks.com/r/Cortex-XSIAM/Cortex-XSIAM-Documentation/Data-source-UUIDs).
 
-[This github repo](https://github.com/demisto/content/tree/master/Packs/FortiGate) provides a listing of Palo Alto Content Packs which are helpful in understanding the Palo Alto required ingest format for most data sources.  For example, if you look at the pack for Fortigate, you will see that the required ingest format is CEF.
+[This github repo](https://github.com/demisto/content/tree/master/Packs/) provides a listing of Palo Alto Content Packs which are helpful in understanding the Palo Alto required ingest format for most data sources.  For example, if you look at the pack for Fortigate, you will see that the required ingest format is CEF.
 
 ## Deployment
 Log in to your Cortex SIAM Console, select “Settings” from the left menu, then select “Data Sources” to begin adding the third-party integration for Cribl. Click “Add Data Source” from the top left of your console.
@@ -33,8 +33,9 @@ This pack contains three pipelines which highlight a couple of important scenari
 
 It is very important that you do not modify events or drop events being sent to Palo Alto XSIAM, as that may affect parsing, detections, and analytics related to streaming, behavioral, or baselining analytics.
 A combination of the below fields are to be added to every event in a pipeline that sends data to the XSIAM destination (note the leading double-underscore):
-* __sourceIdentifier is required for ALL events
-* __vendor and __product this pair of fields are required for SOME events
+* __sourceIdentifier is required for ALL events.  The XSIAM tile maps it's value into the Source-Identifier header.
+* __vendor and __product this pair of fields are required for events where the generic sourceIdentifier is used. They are Mapped to Vendor and Product headers. 
+* __inputId is required for ALL events.  The XSIAM tile maps it's value into the Integration-Identifier header.
 
 [This PAN documentation](https://docs-cortex.paloaltonetworks.com/r/Cortex-XSIAM/Cortex-XSIAM-Documentation/Ingest-data-from-Cribl), which provides mappings for each data source to the __sourceIdentifier, __vendor, and __product values, is **required** to send data to XSIAM. Palo Alto will update it over time. Several examples of these field mappings that have been validated with the excellent PAN Engineering and Product teams are included in this Palo Alto XSIAM pack.
 
@@ -51,7 +52,93 @@ Query:  dataset = okta_sso_raw
 
 Prepend the above query with 'datamodel' to validate field mnormalization into the appropriate datamodel for XSIAM visibility.
 
+## Pipelines that leverage specific UUID's provided by Palo Alto
+An important concept to understand is that several data sources ingested by XSIAM are forked at ingest into both Cortex Data Lake and into an analytics pipeline.  The purpose of having Cribl Stream assign the UUID (via the __sourceIdentifier field) to each event is to make sure these data sources are forked into the analytics pipeline for both the application of advanced alalytics (not correlation rules) and stitching of events.  Palo Alto has provided data samples that are included in the pack that will help Cribl Stream engineers understand the exact format that XSIAM expects.
+
+List of data sources with unique UUIDs that have their own pipeline to assign the __sourceIdentifier value:
+
+* XSIAM-All-CEF-Formatted-Events (Sample from Palo included)
+* XSIAM-Amazon-AWSAuditLogs (Sample from Palo Alto included)
+* XSIAM-Amazon-AWSEKS
+* XSIAM-Amazon-AWSFlowLogs (Sample from Palo Alto included)
+* XSIAM-Amazon-AWSGenericLogs
+* XSIAM-Amazon-AWSPromptLogs  (Sample from Palo Alto included)
+* XSIAM-Amazon-AWSRoute53Logs
+* XSIAM-Box-Box  (Samples from Palo included for Groups and Users)
+* XSIAM-Checkpoint-CEF (Sample from Palo included)
+* XSIAM-Cisco-ASA-Syslog (Sample from Palo included)
+* XSIAM-Crowdstrike-FalconDataReplicator  (Sample from Palo Alto included)
+* XSIAM-Crowdstrike-FalconIncident  (Sample from Palo Alto included)
+* XSIAM-Crowdstrike-Hosts  (Sample from Palo Alto included)
+* XSIAM-Dropbox-Directory
+* XSIAM-Dropbox-Events
+* XSIAM-Fortinet-Fortigate-Syslog
+* XSIAM-Google-CloudLogging  (Sample from Palo Alto included)
+* XSIAM-Google-Gmail
+* XSIAM-Google-GsuiteReports
+* XSIAM-Google-WorkspaceAlerts
+* XSIAM-Google-WorkspaceApps
+* XSIAM-Google-WorkspaceChromeOSDevices
+* XSIAM-Google-WorkspaceContactGroups
+* XSIAM-Google-WorkspaceContacts
+* XSIAM-Google-WorkspaceDomains
+* XSIAM-Google-WorkspaceGroupMembers
+* XSIAM-Google-WorkspaceGroups
+* XSIAM-Google-WorkspaceMailboxes
+* XSIAM-Google-WorkspaceMailboxSettings
+* XSIAM-Google-WorkspaceMobileDevices
+* XSIAM-Google-WorkspaceOrganization
+* XSIAM-Google-WorkspacePrivileges
+* XSIAM-Google-WorkspaceProfiles
+* XSIAM-Google-WorkspaceRoles
+* XSIAM-Google-WorkspaceRules
+* XSIAM-Google-WorkspaceSchemas
+* XSIAM-Google-WorkspaceUsers
+* XSIAM-Google-WorkspaceUsersSendAsAliases
+* XSIAM-Microsoft-Azure  (Sample from Palo Alto included)
+* XSIAM-Microsoft-AzureAD  (Sample from Palo Alto included)
+* XSIAM-Microsoft-AzureADAudit
+* XSIAM-Microsoft-AzureADSignins
+* XSIAM-Microsoft-DHCP
+* XSIAM-Microsoft-GraphSecurityAlerts
+* XSIAM-Microsoft-Office365AzureAD
+* XSIAM-Microsoft-Office365Contacts
+* XSIAM-Microsoft-Office365Devices
+* XSIAM-Microsoft-Office365DLP
+* XSIAM-Microsoft-Office365Domains
+* XSIAM-Microsoft-Office365ExchangeOnline
+* XSIAM-Microsoft-Office365General
+* XSIAM-Microsoft-Office365Groups
+* XSIAM-Microsoft-Office365Mailboxes
+* XSIAM-Microsoft-Office365Rules
+* XSIAM-Microsoft-Office365SharepointOnline
+* XSIAM-Microsoft-Office365Users
+* XSIAM-OKTA
+* XSIAM-OKTA-SSO  (Sample from Palo Alto included)
+* XSIAM-OneLogin-Events
+* XSIAM-OneLogin-OneLogin
+* XSIAM-PaloAltoNetworks-IOTSecurityAlerts
+* XSIAM-PaloAltoNetworks-IOTSecurityDevices
+* XSIAM-PingID-PingONE
+* XSIAM-Prisma-Assets
+* XSIAM-Prisma-Cloud
+* XSIAM-Proofpoint-TAP
+* XSIAM-Salesforce-SalesforceLogs
+* XSIAM-Salesforce-SalesforceSnapshots
+* XSIAM-SentinelOne-DeepVisibility  (Sample from Palo Alto included)
+* XSIAM-ServiceNow-CMDB  (Sample from Palo Alto included)
+* XSIAM-Workday-Workday
+* XSIAM-Zscaler-ZIA (Sample from Palo included)
+* XSIAM-Zscaler-ZPA-Syslog (Sample from Palo included)
+* XSIAM_Microsoft_Defender_via_EventHub  (Sample from Palo Alto included)
+
 ## Release Notes
+
+### Version 2.1.1 - 2026-03-23
+Added a mention that the __inputID must be passed to the XSIAM dest tile.
+
+### Version 2.1.0 - 2026-03-18
+Added Palo Alto provided samples that have the same or very similar names as the associated pipelines.  These samples are examples of what is expected to be ingested into XSIAM.  You need to make sure the event formatting within Cribl Stream matches the expected format.
 
 ### Version 2.0.1 - 2026-02-18
 Added support for Microsoft Defender data.  The pipeline needs to extract individual records into multiple events and then applies the Palo provided UUID for ingest into XSIAM.
